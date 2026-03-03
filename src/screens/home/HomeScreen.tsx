@@ -246,9 +246,6 @@ export default function HomeScreen({ navigation, route }: any) {
             <Animated.View style={[styles.header, { opacity: headerFade }]}>
                 <View style={styles.headerBase} />
                 <View style={styles.headerOverlay} />
-                <View style={[styles.decorCircle, styles.circle1]} />
-                <View style={[styles.decorCircle, styles.circle2]} />
-                <View style={[styles.decorCircleSmall, styles.circle3]} />
 
                 {/* Bottom curve */}
                 <View style={styles.curveWrapper}>
@@ -443,7 +440,7 @@ const styles = StyleSheet.create({
 
     // ─── Header ─────────────────────────────────────────
     header: {
-        height: 280,
+        height: 292,
         position: 'relative',
         overflow: 'hidden',
     },
@@ -453,25 +450,8 @@ const styles = StyleSheet.create({
     },
     headerOverlay: {
         ...StyleSheet.absoluteFillObject,
-        backgroundColor: 'rgba(102, 126, 234, 0.35)',
+        backgroundColor: 'rgba(38, 160, 252, 0.30)',
     },
-    decorCircle: {
-        position: 'absolute',
-        width: 200,
-        height: 200,
-        borderRadius: 100,
-        backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    },
-    circle1: { top: -50, right: -40 },
-    circle2: { bottom: -80, left: -60 },
-    decorCircleSmall: {
-        position: 'absolute',
-        width: 70,
-        height: 70,
-        borderRadius: 35,
-        backgroundColor: 'rgba(255, 255, 255, 0.07)',
-    },
-    circle3: { top: 80, right: 70 },
     curveWrapper: {
         position: 'absolute',
         bottom: -1,
@@ -481,15 +461,16 @@ const styles = StyleSheet.create({
     },
     curve: {
         width: '100%',
-        height: 50,
+        height: 56,
         backgroundColor: Colors.background,
-        borderTopLeftRadius: 30,
-        borderTopRightRadius: 30,
+        borderTopLeftRadius: 36,
+        borderTopRightRadius: 36,
     },
     headerContent: {
         flex: 1,
         paddingHorizontal: Spacing.xl,
         paddingTop: Platform.OS === 'ios' ? 56 : 40,
+        paddingBottom: 10,
         zIndex: 1,
     },
 
@@ -500,10 +481,12 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
     },
     menuButton: {
-        width: 40,
-        height: 40,
-        borderRadius: 12,
-        backgroundColor: 'rgba(255, 255, 255, 0.15)',
+        width: 42,
+        height: 42,
+        borderRadius: 13,
+        backgroundColor: 'rgba(255, 255, 255, 0.19)',
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.22)',
         justifyContent: 'center',
         alignItems: 'center',
     },
@@ -514,15 +497,15 @@ const styles = StyleSheet.create({
     },
     locationPill: {
         maxWidth: '100%',
-        height: 36,
-        borderRadius: 18,
-        paddingHorizontal: 12,
+        height: 38,
+        borderRadius: 19,
+        paddingHorizontal: 14,
         flexDirection: 'row',
         alignItems: 'center',
         gap: 6,
-        backgroundColor: 'rgba(255, 255, 255, 0.15)',
+        backgroundColor: 'rgba(255, 255, 255, 0.19)',
         borderWidth: 1,
-        borderColor: 'rgba(255, 255, 255, 0.2)',
+        borderColor: 'rgba(255, 255, 255, 0.24)',
     },
     locationText: {
         color: Colors.white,
@@ -531,10 +514,12 @@ const styles = StyleSheet.create({
         maxWidth: 170,
     },
     notifButton: {
-        width: 40,
-        height: 40,
-        borderRadius: 12,
-        backgroundColor: 'rgba(255, 255, 255, 0.15)',
+        width: 42,
+        height: 42,
+        borderRadius: 13,
+        backgroundColor: 'rgba(255, 255, 255, 0.19)',
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.22)',
         justifyContent: 'center',
         alignItems: 'center',
     },
@@ -560,16 +545,16 @@ const styles = StyleSheet.create({
 
     // ─── Greeting ───────────────────────────────────────
     greetingSection: {
-        marginTop: 16,
+        marginTop: 18,
     },
     greeting: {
         fontSize: 14,
-        color: 'rgba(255, 255, 255, 0.8)',
-        fontWeight: '400',
+        color: 'rgba(255, 255, 255, 0.86)',
+        fontWeight: '500',
     },
     userName: {
-        fontSize: 24,
-        fontWeight: '700',
+        fontSize: 27,
+        fontWeight: '800',
         color: Colors.white,
         marginTop: 2,
     },
@@ -579,18 +564,20 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         backgroundColor: Colors.white,
-        borderRadius: BorderRadius.xl,
-        height: 48,
-        paddingHorizontal: 16,
-        marginTop: 16,
+        borderRadius: BorderRadius.xxl,
+        height: 52,
+        paddingHorizontal: 18,
+        marginTop: 18,
         gap: 10,
-        ...Shadows.md,
+        borderWidth: 1,
+        borderColor: '#E8EEF5',
+        ...Shadows.elevated,
     },
     searchText: {
         flex: 1,
         fontSize: 14,
-        color: Colors.placeholder,
-        fontWeight: '400',
+        color: Colors.muted,
+        fontWeight: '500',
     },
     searchDivider: {
         width: 1,
@@ -601,15 +588,15 @@ const styles = StyleSheet.create({
     // ─── Scroll ─────────────────────────────────────────
     scrollContainer: {
         flex: 1,
-        marginTop: -15,
+        marginTop: -18,
     },
     scrollView: {
         flex: 1,
     },
     scrollContent: {
         paddingHorizontal: Spacing.xl,
-        paddingTop: Spacing.xl,
-        paddingBottom: 100,
+        paddingTop: Spacing.lg,
+        paddingBottom: 108,
     },
 
     // ─── Things To Do ───────────────────────────────────
@@ -622,14 +609,14 @@ const styles = StyleSheet.create({
     },
     thingsList: {
         gap: 12,
-        paddingRight: 4,
+        paddingRight: 10,
     },
     todoCard: {
         width: 130,
         height: 150,
-        borderRadius: 18,
+        borderRadius: 20,
         overflow: 'hidden',
-        ...Shadows.card,
+        ...Shadows.md,
     },
     todoGradientBg: {
         ...StyleSheet.absoluteFillObject,
@@ -643,10 +630,10 @@ const styles = StyleSheet.create({
         padding: 12,
     },
     todoIconCircle: {
-        width: 52,
-        height: 52,
-        borderRadius: 26,
-        backgroundColor: 'rgba(255, 255, 255, 0.2)',
+        width: 56,
+        height: 56,
+        borderRadius: 28,
+        backgroundColor: 'rgba(255, 255, 255, 0.24)',
         justifyContent: 'center',
         alignItems: 'center',
         marginBottom: 10,

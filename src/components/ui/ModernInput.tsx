@@ -92,13 +92,13 @@ export default function ModernInput({
             case 'filled':
                 return {
                     backgroundColor: isFocused ? Colors.white : Colors.surfaceSecondary,
-                    borderRadius: BorderRadius.lg,
+                    borderRadius: BorderRadius.xl,
                     borderWidth: 1.5,
                 };
             case 'outlined':
                 return {
                     backgroundColor: Colors.white,
-                    borderRadius: BorderRadius.lg,
+                    borderRadius: BorderRadius.xl,
                     borderWidth: 1.5,
                 };
             case 'underline':
@@ -165,6 +165,13 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         overflow: 'hidden',
+        ...{
+            shadowColor: '#123B66',
+            shadowOffset: { width: 0, height: 3 },
+            shadowOpacity: 0.06,
+            shadowRadius: 8,
+            elevation: 2,
+        },
     },
     input: {
         flex: 1,

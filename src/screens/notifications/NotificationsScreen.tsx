@@ -131,6 +131,12 @@ export default function NotificationsScreen({ navigation }: any) {
             {/* Header */}
             <View style={styles.header}>
                 <View style={styles.headerLeft}>
+                    <TouchableOpacity
+                        style={styles.backButton}
+                        onPress={() => navigation.goBack()}
+                        activeOpacity={0.7}>
+                        <FlutterSvgIcon name="back" size={16} color={Colors.heading} />
+                    </TouchableOpacity>
                     <Text style={styles.headerTitle}>Notifications</Text>
                     {unreadCount > 0 && (
                         <View style={styles.unreadBadge}>
@@ -244,6 +250,16 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         gap: 8,
+    },
+    backButton: {
+        width: 34,
+        height: 34,
+        borderRadius: 10,
+        backgroundColor: Colors.surfaceSecondary,
+        borderWidth: 1,
+        borderColor: Colors.border,
+        justifyContent: 'center',
+        alignItems: 'center',
     },
     headerTitle: {
         ...Typography.headlineMedium,

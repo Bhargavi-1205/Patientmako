@@ -58,12 +58,12 @@ export default function GlassCard({
                     backgroundColor: Colors.glass,
                     borderWidth: 1,
                     borderColor: Colors.glassBorder,
-                    ...Shadows.sm,
+                    ...Shadows.md,
                 };
             case 'solid':
                 return {
                     backgroundColor: Colors.surface,
-                    ...Shadows.card,
+                    ...Shadows.md,
                 };
             case 'bordered':
                 return {
@@ -100,5 +100,6 @@ const styles = StyleSheet.create({
     card: {
         borderRadius: BorderRadius.xl,
         overflow: 'hidden',
+        borderCurve: 'continuous',
     },
 });

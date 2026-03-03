@@ -7,7 +7,6 @@ import {
     StyleSheet,
     TouchableOpacity,
     Alert,
-    ScrollView,
     Image,
     Platform,
 } from 'react-native';
@@ -188,11 +187,8 @@ export default function AppDrawer({ navigation, onClose }: DrawerProps) {
                 </TouchableOpacity>
             </View>
 
-            {/* Menu Items — Scrollable area */}
-            <ScrollView
-                style={styles.menuContainer}
-                contentContainerStyle={styles.menuContent}
-                showsVerticalScrollIndicator={false}>
+            {/* Menu Items — Fixed area (no scroll) */}
+            <View style={styles.menuContainer}>
                 {/* Main Section */}
                 <Text style={styles.sectionLabel}>MENU</Text>
                 <View style={styles.menuCard}>
@@ -214,7 +210,7 @@ export default function AppDrawer({ navigation, onClose }: DrawerProps) {
                         </React.Fragment>
                     ))}
                 </View>
-            </ScrollView>
+            </View>
 
             {/* Sign Out — Pinned to Bottom */}
             <View style={[styles.logoutSection, { paddingBottom: Math.max(insets.bottom, 16) + 8 }]}>
@@ -242,7 +238,7 @@ const styles = StyleSheet.create({
 
     // ─── Header ─────────────────────────────────────────
     headerSection: {
-        height: 155,
+        height: 150,
         position: 'relative',
         overflow: 'hidden',
     },
@@ -334,50 +330,49 @@ const styles = StyleSheet.create({
     // ─── Menu ───────────────────────────────────────────
     menuContainer: {
         flex: 1,
-    },
-    menuContent: {
         paddingHorizontal: Spacing.lg,
-        paddingTop: Spacing.xl,
-        paddingBottom: Spacing.lg,
+        paddingTop: Spacing.lg,
+        paddingBottom: Spacing.sm,
+        justifyContent: 'flex-start',
     },
     sectionLabel: {
         fontSize: 11,
         fontWeight: '700',
         color: Colors.muted,
         letterSpacing: 1.5,
-        marginBottom: 10,
+        marginBottom: 8,
         marginLeft: 4,
     },
     menuCard: {
         backgroundColor: Colors.surface,
         borderRadius: BorderRadius.xl,
-        marginBottom: Spacing.xl,
+        marginBottom: Spacing.md,
         ...Shadows.sm,
     },
     drawerItem: {
         flexDirection: 'row',
         alignItems: 'center',
-        paddingVertical: 14,
+        paddingVertical: 11,
         paddingHorizontal: Spacing.lg,
     },
     itemIconCircle: {
-        width: 42,
-        height: 42,
-        borderRadius: 13,
+        width: 38,
+        height: 38,
+        borderRadius: 12,
         justifyContent: 'center',
         alignItems: 'center',
-        marginRight: 14,
+        marginRight: 12,
     },
     itemTextContainer: {
         flex: 1,
     },
     itemLabel: {
-        fontSize: 15,
+        fontSize: 14,
         fontWeight: '600',
         color: Colors.heading,
     },
     itemSubtitle: {
-        fontSize: 12,
+        fontSize: 11,
         color: Colors.muted,
         marginTop: 1,
     },
@@ -390,7 +385,7 @@ const styles = StyleSheet.create({
     // ─── Logout — Pinned to Bottom ─────────────────────
     logoutSection: {
         paddingHorizontal: Spacing.lg,
-        paddingTop: 4,
+        paddingTop: 0,
         backgroundColor: Colors.background,
     },
     logoutDivider: {
@@ -401,7 +396,7 @@ const styles = StyleSheet.create({
     signOutButton: {
         flexDirection: 'row',
         alignItems: 'center',
-        padding: 14,
+        padding: 12,
         backgroundColor: Colors.errorLight,
         borderRadius: BorderRadius.xl,
         gap: 10,
@@ -424,6 +419,6 @@ const styles = StyleSheet.create({
         fontSize: 11,
         color: Colors.muted,
         textAlign: 'center',
-        marginTop: 10,
+        marginTop: 8,
     },
 });

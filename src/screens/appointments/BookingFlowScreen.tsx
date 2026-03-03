@@ -326,6 +326,12 @@ export default function BookingFlowScreen({ route, navigation }: any) {
     return (
         <View style={styles.container}>
             <View style={styles.header}>
+                <TouchableOpacity
+                    style={styles.backButton}
+                    onPress={() => navigation.goBack()}
+                    activeOpacity={0.7}>
+                    <FlutterSvgIcon name="back" size={16} color={Colors.heading} />
+                </TouchableOpacity>
                 <View style={styles.headerCenter}>
                     <Text style={styles.headerTitle}>Book Appointment</Text>
                     <Text style={styles.headerSubtitle} numberOfLines={1}>
@@ -507,6 +513,16 @@ const styles = StyleSheet.create({
         paddingHorizontal: Spacing.lg,
         paddingBottom: Spacing.md,
         backgroundColor: Colors.surface,
+    },
+    backButton: {
+        width: 34,
+        height: 34,
+        borderRadius: 10,
+        backgroundColor: Colors.surfaceSecondary,
+        borderWidth: 1,
+        borderColor: Colors.border,
+        alignItems: 'center',
+        justifyContent: 'center',
     },
 
     headerCenter: {

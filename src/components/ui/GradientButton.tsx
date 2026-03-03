@@ -122,6 +122,12 @@ export default function GradientButton({
                 onPressOut={handlePressOut}
                 disabled={isDisabled}
                 activeOpacity={0.9}>
+                {(variant === 'primary' || variant === 'danger') && !isDisabled ? (
+                    <>
+                        <View style={styles.topGlow} />
+                        <View style={styles.bottomTint} />
+                    </>
+                ) : null}
                 {loading ? (
                     <ActivityIndicator color={getTextColor()} size="small" />
                 ) : (
@@ -147,6 +153,9 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'center',
         alignItems: 'center',
+        overflow: 'hidden',
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.18)',
     },
     content: {
         flexDirection: 'row',
@@ -155,5 +164,21 @@ const styles = StyleSheet.create({
     },
     iconWrapper: {
         marginRight: 4,
+    },
+    topGlow: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        height: '55%',
+        backgroundColor: 'rgba(255,255,255,0.16)',
+    },
+    bottomTint: {
+        position: 'absolute',
+        left: 0,
+        right: 0,
+        bottom: 0,
+        height: '50%',
+        backgroundColor: 'rgba(0,0,0,0.07)',
     },
 });

@@ -4,7 +4,6 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors, Typography, Spacing, BorderRadius, Shadows } from '../../config/theme';
 import { ROUTES } from '../../config/constants';
-import FlutterSvgIcon from '../common/FlutterSvgIcon';
 
 interface PrescriptionCardProps {
     prescription: {
@@ -57,7 +56,7 @@ export default function PrescriptionCard({ prescription, navigation }: Prescript
                 {/* Top Row */}
                 <View style={styles.topRow}>
                     <View style={styles.iconContainer}>
-                        <FlutterSvgIcon name="medicalPrescription" size={22} color={Colors.primaryBlue} />
+                        <Ionicons name="document-text" size={22} color={Colors.primaryBlue} />
                     </View>
                     <View style={styles.content}>
                         <Text style={styles.doctorName} numberOfLines={1}>
@@ -119,7 +118,9 @@ const styles = StyleSheet.create({
         width: 46,
         height: 46,
         borderRadius: 14,
-        backgroundColor: Colors.primaryUltraLight,
+        backgroundColor: '#DDEFFF',
+        borderWidth: 1,
+        borderColor: '#C9E4FF',
         justifyContent: 'center',
         alignItems: 'center',
         marginRight: 12,

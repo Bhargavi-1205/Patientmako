@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { WebView } from 'react-native-webview';
 import * as Sharing from 'expo-sharing';
+import * as Print from 'expo-print';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../../config/theme';
 import { networkClient } from '../../services/networkClient';
@@ -452,9 +453,45 @@ export default function PDFViewerScreen({ route, navigation }: any) {
         }
     }, []);
 
+    const ensureLocalPdfForActions = useCallback(async (): Promise<string | null> => {
+        if (localFileUriRef.current) {
+            const info = await FileSystem.getInfoAsync(localFileUriRef.current);
+            if (info.exists) {
+                return localFileUriRef.current;
+            }
+            localFileUriRef.current = null;
+        }
+
+        if (!resolvedPdfUrl) {
+            return null;
+        }
+
+        let localUri: string | null = null;
+
+        if (incomingClinicId) {
+            try {
+                localUri = await tryDecryptPdf(resolvedPdfUrl, incomingClinicId);
+            } catch {
+                localUri = null;
+            }
+        }
+
+        if (!localUri) {
+            localUri = await downloadPdfLocally(resolvedPdfUrl);
+        }
+
+        if (localUri) {
+            localFileUriRef.current = localUri;
+            return localUri;
+        }
+
+        return null;
+    }, [downloadPdfLocally, incomingClinicId, resolvedPdfUrl, tryDecryptPdf]);
+
     /** Save PDF to device local storage (Downloads on Android, Files on iOS) */
     const handleDownload = useCallback(async () => {
-        if (!localFileUriRef.current) {
+        const sourceUri = await ensureLocalPdfForActions();
+        if (!sourceUri) {
             Alert.alert('Download', 'No PDF available to download.');
             return;
         }
@@ -469,7 +506,7 @@ export default function PDFViewerScreen({ route, navigation }: any) {
                 // Android: Use SAF (Storage Access Framework) to let user pick save location
                 const permissions = await FileSystem.StorageAccessFramework.requestDirectoryPermissionsAsync();
                 if (permissions.granted) {
-                    const base64Content = await FileSystem.readAsStringAsync(localFileUriRef.current!, {
+                    const base64Content = await FileSystem.readAsStringAsync(sourceUri, {
                         encoding: FileSystem.EncodingType.Base64,
                     });
                     const newFileUri = await FileSystem.StorageAccessFramework.createFileAsync(
@@ -481,12 +518,14 @@ export default function PDFViewerScreen({ route, navigation }: any) {
                         encoding: FileSystem.EncodingType.Base64,
                     });
                     Alert.alert('Downloaded', 'Prescription has been saved to your selected folder.');
+                } else {
+                    Alert.alert('Permission Required', 'Please allow folder access to save the prescription.');
                 }
             } else {
                 // iOS: Copy to a Documents directory, then use share sheet targeting "Save to Files"
                 const docDir = FileSystem.documentDirectory + fileName;
                 await FileSystem.copyAsync({
-                    from: localFileUriRef.current!,
+                    from: sourceUri,
                     to: docDir,
                 });
                 // On iOS, use Sharing to open the share sheet so user can "Save to Files"
@@ -506,7 +545,7 @@ export default function PDFViewerScreen({ route, navigation }: any) {
         } finally {
             setDownloading(false);
         }
-    }, [doctorDisplayName]);
+    }, [doctorDisplayName, ensureLocalPdfForActions]);
 
     const handleShare = useCallback(async () => {
         if (!resolvedPdfUrl && !localFileUriRef.current) {
@@ -515,10 +554,11 @@ export default function PDFViewerScreen({ route, navigation }: any) {
         }
 
         try {
-            if (localFileUriRef.current) {
-                const info = await FileSystem.getInfoAsync(localFileUriRef.current);
+            const sourceUri = await ensureLocalPdfForActions();
+            if (sourceUri) {
+                const info = await FileSystem.getInfoAsync(sourceUri);
                 if (info.exists) {
-                    await Sharing.shareAsync(localFileUriRef.current, {
+                    await Sharing.shareAsync(sourceUri, {
                         mimeType: 'application/pdf',
                         dialogTitle: 'Share Prescription',
                         UTI: 'com.adobe.pdf',
@@ -533,7 +573,23 @@ export default function PDFViewerScreen({ route, navigation }: any) {
         } catch {
             Alert.alert('Error', 'Failed to share prescription.');
         }
-    }, [doctorDisplayName, resolvedPdfUrl]);
+    }, [doctorDisplayName, ensureLocalPdfForActions, resolvedPdfUrl]);
+
+    const handlePrint = useCallback(async () => {
+        try {
+            const sourceUri = await ensureLocalPdfForActions();
+            if (!sourceUri && !resolvedPdfUrl) {
+                Alert.alert('Print', 'No PDF available to print.');
+                return;
+            }
+
+            await Print.printAsync({
+                uri: sourceUri || resolvedPdfUrl,
+            });
+        } catch {
+            Alert.alert('Error', 'Failed to print prescription.');
+        }
+    }, [ensureLocalPdfForActions, resolvedPdfUrl]);
 
     // ─── UI ─────────────────────────────────────────────────────────
 
@@ -568,6 +624,12 @@ export default function PDFViewerScreen({ route, navigation }: any) {
                         ) : (
                             <Ionicons name="download-outline" size={20} color="#4A90D9" />
                         )}
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        style={styles.actionBtn}
+                        onPress={handlePrint}
+                        activeOpacity={0.7}>
+                        <Ionicons name="print-outline" size={20} color="#4A90D9" />
                     </TouchableOpacity>
                     <TouchableOpacity
                         style={styles.actionBtn}

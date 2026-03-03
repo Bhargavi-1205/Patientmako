@@ -14,7 +14,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useAppDispatch, useAppSelector } from '../../store';
 import { fetchAppointmentHistory } from '../../store/slices/appointmentsSlice';
-import { Colors } from '../../config/theme';
+import { Colors, Typography, Spacing, BorderRadius, Shadows } from '../../config/theme';
 import { ROUTES } from '../../config/constants';
 import FlutterSvgIcon from '../../components/common/FlutterSvgIcon';
 
@@ -125,15 +125,31 @@ export default function AppointmentHistoryScreen({ navigation }: any) {
 
     return (
         <View style={styles.container}>
-            {/* Header matches screenshot: solid blue with white back arrow and white text */}
+            {/* Header aligned with Patient Details style */}
             <View style={styles.header}>
-                <TouchableOpacity
-                    style={styles.backButton}
-                    onPress={() => navigation.goBack()}
-                    activeOpacity={0.7}>
-                    <Ionicons name="arrow-back" size={24} color="#FFF" />
-                </TouchableOpacity>
-                <Text style={styles.headerTitle}>Appointment History</Text>
+                <View style={styles.headerBase} />
+                <View style={styles.headerOverlay} />
+                <View style={[styles.decorCircle, styles.dc1]} />
+                <View style={[styles.decorCircle, styles.dc2]} />
+
+                <View style={styles.headerContent}>
+                    <View style={styles.headerRow}>
+                        <TouchableOpacity
+                            style={styles.backButton}
+                            onPress={() => navigation.goBack()}
+                            activeOpacity={0.7}>
+                            <Ionicons name="chevron-back" size={22} color={Colors.white} />
+                        </TouchableOpacity>
+                        <View style={styles.headerTitleBlock}>
+                            <Text style={styles.headerTitle}>Appointment History</Text>
+                            <Text style={styles.headerSubtitle}>Past appointments</Text>
+                        </View>
+                    </View>
+                </View>
+
+                <View style={styles.curveWrapper}>
+                    <View style={styles.curve} />
+                </View>
             </View>
 
             {loading && history.length === 0 ? (
@@ -172,41 +188,88 @@ export default function AppointmentHistoryScreen({ navigation }: any) {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#F3F4F6', // Light gray background like screenshot
+        backgroundColor: Colors.background,
     },
+
     header: {
+        height: 160,
+        position: 'relative',
+        overflow: 'hidden',
+    },
+    headerBase: {
+        ...StyleSheet.absoluteFillObject,
+        backgroundColor: Colors.primaryBlue,
+    },
+    headerOverlay: {
+        ...StyleSheet.absoluteFillObject,
+        backgroundColor: 'rgba(59, 130, 246, 0.4)',
+    },
+    decorCircle: {
+        position: 'absolute',
+        width: 130,
+        height: 130,
+        borderRadius: 65,
+        backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    },
+    dc1: { top: -40, right: -30 },
+    dc2: { bottom: -50, left: -20 },
+    headerContent: {
+        paddingTop: Platform.OS === 'ios' ? 56 : 40,
+        paddingHorizontal: Spacing.xl,
+        zIndex: 1,
+    },
+    headerRow: {
         flexDirection: 'row',
         alignItems: 'center',
-        paddingTop: Platform.OS === 'ios' ? 50 : 36,
-        paddingHorizontal: 16,
-        paddingBottom: 16,
-        backgroundColor: '#3B82F6', // Primary Blue
     },
     backButton: {
-        padding: 4,
-        marginRight: 16,
+        width: 38,
+        height: 38,
+        borderRadius: 12,
+        backgroundColor: 'rgba(255, 255, 255, 0.18)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginRight: 14,
+    },
+    headerTitleBlock: {
+        flex: 1,
     },
     headerTitle: {
-        fontSize: 20,
-        fontWeight: '500',
-        color: '#FFFFFF',
+        fontSize: 22,
+        fontWeight: '800',
+        color: Colors.white,
+    },
+    headerSubtitle: {
+        fontSize: 13,
+        color: 'rgba(255, 255, 255, 0.7)',
+        marginTop: 2,
+    },
+    curveWrapper: {
+        position: 'absolute',
+        bottom: -1,
+        left: 0,
+        right: 0,
+        height: 30,
+    },
+    curve: {
+        width: '100%',
+        height: 50,
+        backgroundColor: Colors.background,
+        borderTopLeftRadius: 30,
+        borderTopRightRadius: 30,
     },
     list: {
-        padding: 12,
+        padding: Spacing.xl,
         paddingBottom: 100,
     },
     card: {
-        backgroundColor: '#FFFFFF',
-        borderRadius: 8,
-        padding: 16,
-        marginBottom: 12,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.1,
-        shadowRadius: 2,
-        elevation: 2,
+        backgroundColor: Colors.surface,
+        borderRadius: BorderRadius.xl,
+        padding: Spacing.lg,
+        marginBottom: Spacing.md,
+        ...Shadows.sm,
         borderWidth: 1,
-        borderColor: '#E5E7EB',
+        borderColor: Colors.borderLight,
     },
     cardRow: {
         flexDirection: 'row',
@@ -218,21 +281,21 @@ const styles = StyleSheet.create({
     },
     label: {
         fontSize: 14,
-        color: '#6B7280',
+        color: Colors.paragraph,
         fontWeight: '600',
     },
     nameLabel: {
-        color: '#4B5563', // slightly darker
+        color: Colors.body,
         fontWeight: '700',
     },
     value: {
         fontSize: 14,
-        color: '#6B7280',
+        color: Colors.paragraph,
         fontWeight: '400',
         flexShrink: 1,
     },
     nameValue: {
-        color: '#4B5563', // slightly darker
+        color: Colors.body,
         fontWeight: '700',
     },
     buttonContainer: {
@@ -240,15 +303,15 @@ const styles = StyleSheet.create({
         marginTop: 4,
     },
     prescriptionButton: {
-        backgroundColor: '#2196F3',
+        backgroundColor: '#1A2F4D',
         paddingVertical: 10,
-        paddingHorizontal: 16,
-        borderRadius: 6,
+        paddingHorizontal: 18,
+        borderRadius: BorderRadius.lg,
     },
     prescriptionButtonText: {
-        color: '#FFFFFF',
+        color: Colors.white,
         fontSize: 14,
-        fontWeight: '600',
+        fontWeight: '700',
     },
     centered: {
         flex: 1,
@@ -264,14 +327,12 @@ const styles = StyleSheet.create({
         width: 80,
         height: 80,
         borderRadius: 40,
-        backgroundColor: '#E5E7EB',
+        backgroundColor: Colors.surfaceSecondary,
         justifyContent: 'center',
         alignItems: 'center',
         marginBottom: 16,
     },
     emptyTitle: {
-        fontSize: 18,
-        color: '#374151',
-        fontWeight: '600',
+        ...Typography.headlineSmall,
     },
 });

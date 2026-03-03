@@ -103,15 +103,13 @@ export default function PrescriptionsScreen({ navigation }: any) {
     return (
         <View style={styles.container}>
             <StatusBar barStyle="light-content" backgroundColor={Colors.primaryBlue} />
+            {renderHeader()}
 
             {loading && prescriptions.length === 0 ? (
-                <>
-                    {renderHeader()}
-                    <View style={styles.centered}>
-                        <ActivityIndicator size="large" color={Colors.primaryBlue} />
-                        <Text style={styles.loadingText}>Loading prescriptions...</Text>
-                    </View>
-                </>
+                <View style={styles.centered}>
+                    <ActivityIndicator size="large" color={Colors.primaryBlue} />
+                    <Text style={styles.loadingText}>Loading prescriptions...</Text>
+                </View>
             ) : (
                 <FlatList
                     data={filteredPrescriptions}
@@ -120,7 +118,6 @@ export default function PrescriptionsScreen({ navigation }: any) {
                         <PrescriptionCard prescription={item} navigation={navigation} />
                     )}
                     contentContainerStyle={styles.list}
-                    ListHeaderComponent={renderHeader}
                     showsVerticalScrollIndicator={false}
                     refreshControl={
                         <RefreshControl
@@ -128,7 +125,7 @@ export default function PrescriptionsScreen({ navigation }: any) {
                             onRefresh={onRefresh}
                             colors={[Colors.primaryBlue]}
                             tintColor={Colors.primaryBlue}
-                            progressViewOffset={200}
+                            progressViewOffset={10}
                         />
                     }
                     ListEmptyComponent={
