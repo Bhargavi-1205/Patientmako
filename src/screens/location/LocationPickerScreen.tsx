@@ -21,6 +21,7 @@ import MapView, {
 } from 'react-native-maps';
 import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
 import * as Location from 'expo-location';
+import { Ionicons } from '@expo/vector-icons';
 import { BorderRadius, Colors, Shadows, Spacing } from '../../config/theme';
 import { ENV } from '../../config/env';
 import { API_URLS, ROUTES } from '../../config/constants';
@@ -148,6 +149,7 @@ export default function LocationPickerScreen({ navigation, route }: LocationPick
     const geocodeDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const geocodeRequestIdRef = useRef(0);
     const lastResolvedCoordsKeyRef = useRef<string>('');
+    const resolvedAddressCacheRef = useRef<Map<string, string>>(new Map());
     const hasGooglePlacesApiKey = useMemo(() => Boolean(ENV.GOOGLE_MAPS_API_KEY?.trim()), []);
 
     useEffect(() => {
@@ -263,6 +265,14 @@ export default function LocationPickerScreen({ navigation, route }: LocationPick
                 return;
             }
 
+            const cachedAddress = resolvedAddressCacheRef.current.get(coordsKey);
+            if (cachedAddress) {
+                setSelectedPlaceName(cachedAddress);
+                setIsResolvingAddress(false);
+                lastResolvedCoordsKeyRef.current = coordsKey;
+                return;
+            }
+
             const requestId = geocodeRequestIdRef.current + 1;
             geocodeRequestIdRef.current = requestId;
             setIsResolvingAddress(true);
@@ -276,6 +286,7 @@ export default function LocationPickerScreen({ navigation, route }: LocationPick
             setSelectedPlaceName(resolvedAddress);
             setIsResolvingAddress(false);
             if (resolvedAddress) {
+                resolvedAddressCacheRef.current.set(coordsKey, resolvedAddress);
                 lastResolvedCoordsKeyRef.current = coordsKey;
             }
         },
@@ -290,7 +301,7 @@ export default function LocationPickerScreen({ navigation, route }: LocationPick
 
             geocodeDebounceRef.current = setTimeout(() => {
                 void resolveAddressForCoordinates(coords);
-            }, 450);
+            }, 350);
         },
         [resolveAddressForCoordinates],
     );
@@ -472,6 +483,10 @@ export default function LocationPickerScreen({ navigation, route }: LocationPick
         });
     }, []);
 
+    const handleBack = useCallback(() => {
+        navigation.goBack();
+    }, [navigation]);
+
     const handleConfirmLocation = useCallback(async () => {
         if (isConfirming) {
             return;
@@ -574,6 +589,22 @@ export default function LocationPickerScreen({ navigation, route }: LocationPick
                 />
             </MapView>
 
+            <View style={styles.topActionRow}>
+                <TouchableOpacity
+                    style={styles.mapActionButton}
+                    onPress={handleBack}
+                    activeOpacity={0.8}>
+                    <Ionicons name="chevron-back" size={20} color={Colors.heading} />
+                </TouchableOpacity>
+                <TouchableOpacity
+                    style={[styles.mapActionButton, isFetchingLocation && styles.disabledButton]}
+                    onPress={handleRetryPermission}
+                    disabled={isFetchingLocation}
+                    activeOpacity={0.8}>
+                    <Ionicons name="locate" size={18} color={Colors.heading} />
+                </TouchableOpacity>
+            </View>
+
             <KeyboardAvoidingView
                 behavior={Platform.OS === 'ios' ? 'padding' : undefined}
                 style={styles.searchOverlay}
@@ -610,6 +641,9 @@ export default function LocationPickerScreen({ navigation, route }: LocationPick
                 <Text style={styles.coordinatesText} numberOfLines={3}>
                     {selectedLocationText}
                 </Text>
+                {isResolvingAddress ? (
+                    <Text style={styles.resolvingText}>Updating address...</Text>
+                ) : null}
 
                 {errorMessage ? (
                     <Text style={styles.errorText}>{errorMessage}</Text>
@@ -704,9 +738,31 @@ const styles = StyleSheet.create({
     map: {
         ...StyleSheet.absoluteFillObject,
     },
+    topActionRow: {
+        position: 'absolute',
+        top: Platform.OS === 'ios' ? 56 : 20,
+        left: Spacing.lg,
+        right: Spacing.lg,
+        zIndex: 25,
+        elevation: 25,
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        pointerEvents: 'box-none',
+    },
+    mapActionButton: {
+        width: 40,
+        height: 40,
+        borderRadius: 12,
+        backgroundColor: Colors.white,
+        borderWidth: 1,
+        borderColor: Colors.border,
+        justifyContent: 'center',
+        alignItems: 'center',
+        ...Shadows.sm,
+    },
     searchOverlay: {
         position: 'absolute',
-        top: Platform.OS === 'ios' ? 58 : 22,
+        top: Platform.OS === 'ios' ? 112 : 74,
         left: 0,
         right: 0,
         zIndex: 20,
@@ -752,6 +808,12 @@ const styles = StyleSheet.create({
         marginTop: 6,
         fontSize: 12,
         color: Colors.muted,
+    },
+    resolvingText: {
+        marginTop: 6,
+        fontSize: 12,
+        color: Colors.primaryBlue,
+        fontWeight: '600',
     },
     errorText: {
         marginTop: 6,
