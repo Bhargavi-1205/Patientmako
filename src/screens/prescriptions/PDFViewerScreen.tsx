@@ -226,6 +226,7 @@ export default function PDFViewerScreen({ route, navigation }: any) {
     const [downloading, setDownloading] = useState(false);
     const isMountedRef = useRef(true);
     const localFileUriRef = useRef<string | null>(null);
+    const consultationPayloadPromiseRef = useRef<Promise<any | null> | null>(null);
 
     const doctorDisplayName = useMemo(
         () => prescription?.doctorName || 'N/A',
@@ -246,18 +247,35 @@ export default function PDFViewerScreen({ route, navigation }: any) {
     const fetchPdfUrlFromConsultation = useCallback(async () => {
         if (!consultationId) return '';
 
-        const response = await networkClient.get(
-            `${API_URLS.GET_PDF_DATA}/${consultationId}`,
-            (json: any) => {
-                const payload = json?.data ?? json ?? {};
-                return payload.consultation_pdf_link || payload.pdf_url || payload.url || '';
-            },
-        );
+        if (!consultationPayloadPromiseRef.current) {
+            consultationPayloadPromiseRef.current = (async () => {
+                const candidateUrls = [
+                    `${API_URLS.GET_PDF_DATA}/${consultationId}`,
+                    `${API_URLS.GET_PDF_DATA}?consultation_id=${consultationId}`,
+                    `/consultations/history/${consultationId}`,
+                    `/consultations/history?consultation_id=${consultationId}`,
+                ];
 
-        if (!response.isSuccess) {
-            return '';
+                for (const url of candidateUrls) {
+                    const response = await networkClient.get(url, (json: any) => json?.data ?? json ?? null);
+                    if (response.isSuccess && response.data) {
+                        return response.data;
+                    }
+                }
+
+                return null;
+            })();
         }
-        return String(response.data || '');
+
+        const payload = await consultationPayloadPromiseRef.current;
+        const source = Array.isArray(payload) ? payload[0] : payload;
+
+        return String(
+            source?.consultation_pdf_link ||
+            source?.pdf_url ||
+            source?.url ||
+            '',
+        );
     }, [consultationId]);
 
     const resolveFileKeyCandidates = useCallback(async (): Promise<FileKeyCandidate[]> => {
@@ -268,13 +286,16 @@ export default function PDFViewerScreen({ route, navigation }: any) {
         }
 
         if (consultationId) {
-            const resp = await networkClient.get(
-                `${API_URLS.GET_PDF_DATA}/${consultationId}`,
-                (json: any) => extractFileKeysFromPayload(json?.data ?? json ?? {}),
-            );
-            if (resp.isSuccess && Array.isArray(resp.data)) {
-                (resp.data as string[]).filter(Boolean).forEach((key) =>
-                    candidates.push({ source: 'consultation_lookup', value: key }));
+            const consultationPdfUrl = await fetchPdfUrlFromConsultation();
+            if (consultationPdfUrl) {
+                // no-op; ensures consultation payload lookup ran with fallback URLs
+            }
+            if (consultationPayloadPromiseRef.current) {
+                const payload = await consultationPayloadPromiseRef.current;
+                const fileKeys = extractFileKeysFromPayload(Array.isArray(payload) ? payload[0] : payload);
+                fileKeys.filter(Boolean).forEach((key) =>
+                    candidates.push({ source: 'consultation_lookup', value: key }),
+                );
             }
         }
 
@@ -302,7 +323,7 @@ export default function PDFViewerScreen({ route, navigation }: any) {
         if (fallback) candidates.push({ source: 'storage_fallback', value: fallback });
 
         return candidates.filter((c, i, arr) => arr.findIndex((x) => x.value === c.value) === i);
-    }, [consultationId, incomingFileKey, incomingPatientId]);
+    }, [consultationId, fetchPdfUrlFromConsultation, incomingFileKey, incomingPatientId]);
 
     // ─── Decrypt Path ───────────────────────────────────────────────
 

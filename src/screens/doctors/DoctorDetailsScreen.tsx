@@ -62,9 +62,18 @@ export default function DoctorDetailsScreen({ route, navigation }: any) {
                     <View style={[styles.heroCircle, styles.hc1]} />
                     <View style={[styles.heroCircle, styles.hc2]} />
 
-                    <View style={styles.heroTopBar}>
-                        <Text style={styles.heroScreenTitle}>Doctor Profile</Text>
-                    </View>
+                   <View style={styles.heroTopBar}>
+   <TouchableOpacity
+    style={styles.backButton}
+    onPress={() => navigation.goBack()}
+>
+    <FlutterSvgIcon name="back" size={22} color={Colors.white} />
+</TouchableOpacity>
+
+    <Text style={styles.heroScreenTitle}>Doctor Profile</Text>
+
+    <View style={{ width: 44 }} />
+</View>
 
                     {/* Doctor avatar */}
                     <View style={styles.avatarSection}>
@@ -91,7 +100,7 @@ export default function DoctorDetailsScreen({ route, navigation }: any) {
                 {/* Info Cards */}
                 <View style={styles.content}>
                     {/* Stats Row */}
-                    <View style={styles.statsRow}>
+                    {/* <View style={styles.statsRow}>
                         <View style={styles.statItem}>
                             <View style={[styles.statIcon, { backgroundColor: '#EFF6FF' }]}>
                                 <FlutterSvgIcon name="degree" size={18} />
@@ -107,7 +116,7 @@ export default function DoctorDetailsScreen({ route, navigation }: any) {
                             <Text style={styles.statValue}>500+</Text>
                             <Text style={styles.statLabel}>Patients</Text>
                         </View>
-                    </View>
+                    </View> */}
 
                     {/* About Section */}
                     <View style={styles.sectionCard}>
@@ -258,6 +267,14 @@ const styles = StyleSheet.create({
         paddingHorizontal: Spacing.lg,
         zIndex: 1,
     },
+   backButton: {
+    width: 48,
+    height: 48,
+    borderRadius: 16,
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    justifyContent: 'center',
+    alignItems: 'center',
+},
 
     heroScreenTitle: {
         fontSize: 16,

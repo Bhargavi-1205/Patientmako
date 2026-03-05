@@ -2,6 +2,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { networkClient } from '../../services/networkClient';
 import { API_URLS } from '../../config/constants';
+import { tokenHelper } from '../../services/tokenHelper';
 
 export interface Medication {
     id: string;
@@ -32,40 +33,56 @@ const initialState: MedicationsState = {
 export const fetchActiveMedications = createAsyncThunk(
     'medications/fetchActive',
     async (_, { rejectWithValue }) => {
-        const response = await networkClient.get(
-            API_URLS.GET_ACTIVE_MEDICATIONS,
-            (json: any) => {
-                const flattened: Medication[] = [];
-                // backend returns { "Breakfast": { "PatientName": [Prescriptions] } }
-                if (json && typeof json === 'object') {
-                    Object.entries(json).forEach(([timeKey, patientMap]: [string, any]) => {
-                        if (patientMap && typeof patientMap === 'object') {
-                            Object.values(patientMap).forEach((prescriptions: any) => {
-                                if (Array.isArray(prescriptions)) {
-                                    prescriptions.forEach((item: any) => {
-                                        flattened.push({
-                                            id: item.prescription_id || Math.random().toString(),
-                                            name: item.brand_name || 'Medicine',
-                                            dosage: item.variant_id || '',
-                                            frequency: timeKey, // Using the timeKey as frequency
-                                            duration: item.duration?.toString() || '',
-                                            instructions: '',
-                                            startDate: item.created_at ? new Date(item.created_at).toLocaleDateString() : '',
-                                            endDate: item.expiry_at ? new Date(item.expiry_at).toLocaleDateString() : '',
-                                            status: 'active',
-                                            timeOfDay: timeKey,
-                                        });
+        const mapMedicationPayload = (json: any) => {
+            const flattened: Medication[] = [];
+            const payload = json?.data ?? json ?? {};
+
+            // backend typically returns { "Breakfast": { "PatientName": [Prescriptions] } }
+            if (payload && typeof payload === 'object') {
+                Object.entries(payload).forEach(([timeKey, patientMap]: [string, any]) => {
+                    if (patientMap && typeof patientMap === 'object') {
+                        Object.values(patientMap).forEach((prescriptions: any) => {
+                            if (Array.isArray(prescriptions)) {
+                                prescriptions.forEach((item: any) => {
+                                    flattened.push({
+                                        id: item.prescription_id || Math.random().toString(),
+                                        name: item.brand_name || 'Medicine',
+                                        dosage: item.variant_id || '',
+                                        frequency: timeKey,
+                                        duration: item.duration?.toString() || '',
+                                        instructions: '',
+                                        startDate: item.created_at ? new Date(item.created_at).toLocaleDateString() : '',
+                                        endDate: item.expiry_at ? new Date(item.expiry_at).toLocaleDateString() : '',
+                                        status: 'active',
+                                        timeOfDay: timeKey,
                                     });
-                                }
-                            });
-                        }
-                    });
-                }
-                return flattened;
-            },
-        );
-        if (!response.isSuccess) return rejectWithValue(response.statusMessage);
-        return response.data || [];
+                                });
+                            }
+                        });
+                    }
+                });
+            }
+
+            return flattened;
+        };
+
+        const patientId = await tokenHelper.getPatientId();
+        const candidateUrls = [
+            patientId ? `${API_URLS.GET_ACTIVE_MEDICATIONS}/${patientId}` : '',
+            patientId ? `${API_URLS.GET_ACTIVE_MEDICATIONS}?patient_id=${patientId}` : '',
+            API_URLS.GET_ACTIVE_MEDICATIONS,
+        ].filter(Boolean);
+
+        let lastErrorMessage: string | null = null;
+        for (const url of candidateUrls) {
+            const response = await networkClient.get(url, mapMedicationPayload);
+            if (response.isSuccess) {
+                return response.data || [];
+            }
+            lastErrorMessage = response.statusMessage;
+        }
+
+        return rejectWithValue(lastErrorMessage || 'Unable to fetch active medications.');
     },
 );
 
