@@ -67,22 +67,16 @@ export const fetchActiveMedications = createAsyncThunk(
         };
 
         const patientId = await tokenHelper.getPatientId();
-        const candidateUrls = [
-            patientId ? `${API_URLS.GET_ACTIVE_MEDICATIONS}/${patientId}` : '',
-            patientId ? `${API_URLS.GET_ACTIVE_MEDICATIONS}?patient_id=${patientId}` : '',
-            API_URLS.GET_ACTIVE_MEDICATIONS,
-        ].filter(Boolean);
+        const url = patientId
+            ? `${API_URLS.GET_ACTIVE_MEDICATIONS}?patient_id=${encodeURIComponent(String(patientId))}`
+            : API_URLS.GET_ACTIVE_MEDICATIONS;
 
-        let lastErrorMessage: string | null = null;
-        for (const url of candidateUrls) {
-            const response = await networkClient.get(url, mapMedicationPayload);
-            if (response.isSuccess) {
-                return response.data || [];
-            }
-            lastErrorMessage = response.statusMessage;
+        const response = await networkClient.get(url, mapMedicationPayload);
+        if (response.isSuccess) {
+            return response.data || [];
         }
 
-        return rejectWithValue(lastErrorMessage || 'Unable to fetch active medications.');
+        return rejectWithValue(response.statusMessage || 'Unable to fetch active medications.');
     },
 );
 

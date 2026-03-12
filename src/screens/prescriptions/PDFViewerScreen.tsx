@@ -227,6 +227,7 @@ export default function PDFViewerScreen({ route, navigation }: any) {
     const isMountedRef = useRef(true);
     const localFileUriRef = useRef<string | null>(null);
     const consultationPayloadPromiseRef = useRef<Promise<any | null> | null>(null);
+    const consultationPayloadKeyRef = useRef<string | null>(null);
 
     const doctorDisplayName = useMemo(
         () => prescription?.doctorName || 'N/A',
@@ -247,35 +248,30 @@ export default function PDFViewerScreen({ route, navigation }: any) {
     const fetchPdfUrlFromConsultation = useCallback(async () => {
         if (!consultationId) return '';
 
+        const consultationIdKey = String(consultationId);
+        if (consultationPayloadKeyRef.current !== consultationIdKey) {
+            consultationPayloadKeyRef.current = consultationIdKey;
+            consultationPayloadPromiseRef.current = null;
+        }
+
         if (!consultationPayloadPromiseRef.current) {
             consultationPayloadPromiseRef.current = (async () => {
-                const candidateUrls = [
-                    `${API_URLS.GET_PDF_DATA}/${consultationId}`,
-                    `${API_URLS.GET_PDF_DATA}?consultation_id=${consultationId}`,
-                    `/consultations/history/${consultationId}`,
-                    `/consultations/history?consultation_id=${consultationId}`,
-                ];
-
-                for (const url of candidateUrls) {
-                    const response = await networkClient.get(url, (json: any) => json?.data ?? json ?? null);
-                    if (response.isSuccess && response.data) {
-                        return response.data;
-                    }
-                }
-
-                return null;
+                const url = `${API_URLS.GET_PDF_DATA}/${encodeURIComponent(consultationIdKey)}`;
+                const response = await networkClient.get(url, (json: any) => json?.data ?? json ?? null);
+                return response.isSuccess ? (response.data ?? null) : null;
             })();
         }
 
         const payload = await consultationPayloadPromiseRef.current;
         const source = Array.isArray(payload) ? payload[0] : payload;
 
-        return String(
+        const maybeUrl =
             source?.consultation_pdf_link ||
             source?.pdf_url ||
             source?.url ||
-            '',
-        );
+            '';
+
+        return typeof maybeUrl === 'string' ? maybeUrl : '';
     }, [consultationId]);
 
     const resolveFileKeyCandidates = useCallback(async (): Promise<FileKeyCandidate[]> => {
@@ -288,7 +284,7 @@ export default function PDFViewerScreen({ route, navigation }: any) {
         if (consultationId) {
             const consultationPdfUrl = await fetchPdfUrlFromConsultation();
             if (consultationPdfUrl) {
-                // no-op; ensures consultation payload lookup ran with fallback URLs
+                // no-op; ensures consultation payload lookup ran before extracting file keys
             }
             if (consultationPayloadPromiseRef.current) {
                 const payload = await consultationPayloadPromiseRef.current;

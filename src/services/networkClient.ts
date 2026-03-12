@@ -216,7 +216,7 @@ class NetworkClient {
             const responseData = axiosError.response?.data ?? null;
             const backendMessage = this.extractErrorMessage(responseData);
 
-            if (__DEV__ && axiosError.response) {
+            if (__DEV__ && axiosError.response && responseStatus !== 404) {
                 console.log('[API ERROR]', {
                     method,
                     url,

@@ -26,6 +26,8 @@ type EditProfileScreenProps = {
     navigation: any;
 };
 
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 export default function EditProfileScreen({ navigation }: EditProfileScreenProps) {
     const dispatch = useAppDispatch();
     const authPhoneNumber = useAppSelector((state) => state.auth.phoneNumber);
@@ -41,6 +43,7 @@ export default function EditProfileScreen({ navigation }: EditProfileScreenProps
     const [gender, setGender] = useState('');
     const [email, setEmail] = useState('');
     const [originalEmail, setOriginalEmail] = useState('');
+    const [emailTouched, setEmailTouched] = useState(false);
 
     useEffect(() => {
         dispatch(fetchPatientDetails(''));
@@ -92,9 +95,23 @@ export default function EditProfileScreen({ navigation }: EditProfileScreenProps
         return email.trim() !== originalEmail.trim();
     }, [email, originalEmail]);
 
+    const emailTrimmed = useMemo(() => email.trim(), [email]);
+
+    const emailValidationError = useMemo(() => {
+        if (!emailTouched && !hasEmailChanges) return null;
+        if (!emailTrimmed) return 'Email is required.';
+        if (!EMAIL_REGEX.test(emailTrimmed)) return 'Please enter a valid email address.';
+        return null;
+    }, [emailTouched, hasEmailChanges, emailTrimmed]);
+
     const handleSave = () => {
         if (!hasEmailChanges) {
             Alert.alert('Info', 'No changes to save');
+            return;
+        }
+
+        if (emailValidationError) {
+            Alert.alert('Invalid email', emailValidationError);
             return;
         }
 
@@ -106,7 +123,7 @@ export default function EditProfileScreen({ navigation }: EditProfileScreenProps
         dispatch(
             updatePatient({
                 patientId: currentPatient.id,
-                data: { email: email.trim() },
+                data: { email: emailTrimmed },
             }),
         );
     };
@@ -165,24 +182,30 @@ export default function EditProfileScreen({ navigation }: EditProfileScreenProps
                     </View>
 
                     <Text style={styles.inputLabel}>Email</Text>
-                    <View style={styles.inputContainer}>
+                    <View style={[styles.inputContainer, emailValidationError ? styles.inputContainerError : null]}>
                         <Ionicons name="mail-outline" size={18} color={Colors.primaryBlue} />
                         <TextInput
                             autoCapitalize="none"
                             autoCorrect={false}
                             keyboardType="email-address"
-                            onChangeText={setEmail}
+                            onBlur={() => setEmailTouched(true)}
+                            onChangeText={(value) => {
+                                setEmailTouched(true);
+                                setEmail(value);
+                            }}
                             placeholder="Enter email"
                             placeholderTextColor={Colors.placeholder}
                             style={styles.input}
+                            textContentType="emailAddress"
                             value={email}
                         />
                     </View>
+                    {!!emailValidationError && <Text style={styles.inputErrorText}>{emailValidationError}</Text>}
                 </View>
 
                 <View style={styles.buttonContainer}>
                     <GradientButton
-                        disabled={!hasEmailChanges}
+                        disabled={!hasEmailChanges || !!emailValidationError}
                         loading={updateLoading}
                         onPress={handleSave}
                         title="Save Changes"
@@ -292,12 +315,22 @@ const styles = StyleSheet.create({
         height: 50,
         paddingHorizontal: 14,
     },
+    inputContainerError: {
+        backgroundColor: Colors.errorLight,
+        borderColor: Colors.error,
+    },
     input: {
         color: Colors.heading,
         flex: 1,
         fontSize: 15,
         fontWeight: '500',
         paddingVertical: 0,
+    },
+    inputErrorText: {
+        color: Colors.error,
+        fontSize: 12,
+        fontWeight: '600',
+        marginTop: 8,
     },
     buttonContainer: {
         marginTop: Spacing.xl,
